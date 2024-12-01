@@ -1,0 +1,38 @@
+package frc.robot.subsystems;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Joystick;
+
+public class ArcadeDriveSubsystem {
+
+    private CANSparkMax leftFrontMotor = new CANSparkMax(1, MotorType.Brushless);
+    private CANSparkMax rightFrontMotor = new CANSparkMax(2, MotorType.Brushless);
+    private CANSparkMax leftRearMotor = new CANSparkMax(3, MotorType.Brushless);
+    private CANSparkMax rightRearMotor = new CANSparkMax(4, MotorType.Brushless);
+
+    private Joystick joystick;
+
+    public ArcadeDriveSubsystem(Joystick joystick) {
+        this.joystick = joystick;
+
+        leftFrontMotor.setIdleMode(CANSparkMax.IdleMode.Brake);
+        rightFrontMotor.setIdleMode(CANSparkMax.IdleMode.Brake);
+        leftRearMotor.setIdleMode(CANSparkMax.IdleMode.Brake);
+        rightRearMotor.setIdleMode(CANSparkMax.IdleMode.Brake);
+    }
+
+    public void joystickPeriodic() {
+        double forward = joystick.getY();
+        double turn = joystick.getX();
+
+        double leftSpeed = forward + turn;
+        double rightSpeed = forward - turn;
+
+        leftFrontMotor.set(leftSpeed);
+        rightFrontMotor.set(rightSpeed);
+        leftRearMotor.set(leftSpeed);
+        rightRearMotor.set(rightSpeed);
+    }
+}

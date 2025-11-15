@@ -1,0 +1,114 @@
+package frc.robot.subsystems;
+
+import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.io.ShooterIO;
+import frc.robot.subsystems.io.ShooterIO.ShooterIOInputs;
+
+
+public class ShooterSubsystem extends SubsystemBase {
+    private final ShooterIO io;
+    private final ShooterIOInputs inputs = new ShooterIOInputs();
+
+    private double targetLeftVelocity = 0.0;
+    private double targetRightVelocity = 0.0;
+    private boolean isReversing = false;
+    private double reverseStartTime = 0.0;
+    private static final double REVERSE_DURATION = 0.5; 
+
+    private double lastLeftVel = 0.0;
+    private boolean wasReversing = false; 
+
+    public ShooterSubsystem(ShooterIO io) {
+        this.io = io;
+        wasReversing = false;
+    }
+
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Shooter", inputs);
+        
+        lastLeftVel = inputs.leftWheelVelocityRadPerSec;
+
+
+        if (isReversing) {
+            double currentTime = Timer.getFPGATimestamp();
+            double elapsed = currentTime - reverseStartTime;
+            if (elapsed >= REVERSE_DURATION) {
+                isReversing = false;
+                wasReversing = true;
+                setWheelSpeed(targetLeftVelocity, targetRightVelocity);
+            }
+        } else {
+            if (wasReversing) {
+                wasReversing = false; 
+            }
+            setWheelSpeed(targetLeftVelocity, targetRightVelocity);
+        }
+    }
+
+    public void setWheelSpeed(double leftVelocityRadPerSec, double rightVelocityRadPerSec) {
+        targetLeftVelocity = leftVelocityRadPerSec;
+        targetRightVelocity = rightVelocityRadPerSec;
+        
+        if (!isReversing) {
+
+            double kVoltsPerRadPerSec = 0.1;
+            double leftVolts = leftVelocityRadPerSec * kVoltsPerRadPerSec;
+            double rightVolts = rightVelocityRadPerSec * kVoltsPerRadPerSec;
+            
+
+            if (leftVolts > 12.0) {
+                leftVolts = 12.0;
+            }
+            if (leftVolts < -12.0) {
+                leftVolts = -12.0;
+            }
+            if (rightVolts > 12.0) {
+                rightVolts = 12.0;
+            }
+            if (rightVolts < -12.0) {
+                rightVolts = -12.0;
+            }
+            
+            io.setVoltage(leftVolts, rightVolts);
+        }
+    }
+
+    public void stop() {
+        targetLeftVelocity = 0.0;
+        targetRightVelocity = 0.0;
+        isReversing = false;
+        wasReversing = false;
+        io.stop();
+    }
+
+    public void reverseToClearJam(double reverseVolts) {
+        isReversing = true;
+        reverseStartTime = Timer.getFPGATimestamp();
+        io.reverse(reverseVolts);
+    }
+
+    public boolean isGamePieceStaged() {
+        return inputs.gamePieceStaged;
+    }
+
+    public double getLeftWheelVelocity() {
+        return inputs.leftWheelVelocityRadPerSec;
+    }
+
+    public double getRightWheelVelocity() {
+        return inputs.rightWheelVelocityRadPerSec;
+    }
+
+    public double getTargetLeftVelocity() {
+        return targetLeftVelocity;
+    }
+
+    public double getTargetRightVelocity() {
+        return targetRightVelocity;
+    }
+}
+

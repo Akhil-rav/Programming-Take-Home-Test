@@ -1,0 +1,48 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.subsystems.ArcadeDriveSubsystem;
+
+public class AutonomousDriveCommand extends CommandBase {
+    private ArcadeDriveSubsystem drive;
+    private Timer timer;
+    
+    private static final double STRAIGHT_TIME = 10.0;
+    private static final double SPEED = 0.5;
+    private static final double TURN_TIME = 2.0;
+
+    public AutonomousDriveCommand(ArcadeDriveSubsystem driveSubsystem) {
+        drive = driveSubsystem;
+        timer = new Timer();
+        addRequirements(driveSubsystem);
+    }
+
+    @Override
+    public void initialize() {
+        timer.reset();
+        timer.start();
+    }
+
+    @Override
+    public void execute() {
+        double time = timer.get();
+        
+        if (time < STRAIGHT_TIME) {
+            drive.arcadeDrive(SPEED, 0);
+        } else if (time < STRAIGHT_TIME + TURN_TIME) {
+            drive.arcadeDrive(0, SPEED);
+        }
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        drive.stop();
+        timer.stop();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return timer.get() >= STRAIGHT_TIME + TURN_TIME;
+    }
+}

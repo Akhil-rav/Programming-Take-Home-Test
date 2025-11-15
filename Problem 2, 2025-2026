@@ -1,0 +1,31 @@
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.subsystems.ElevatorSubsystem;
+
+public class ElevatorCommand extends CommandBase {
+    private ElevatorSubsystem elevator;
+    private double speed;
+
+    public ElevatorCommand(ElevatorSubsystem elevatorSubsystem, double elevatorSpeed) {
+        elevator = elevatorSubsystem;
+        speed = elevatorSpeed;
+        addRequirements(elevatorSubsystem);
+    }
+
+    @Override
+    public void execute() {
+        elevator.setElevatorSpeed(speed);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        elevator.stop();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+}
+
